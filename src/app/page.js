@@ -84,28 +84,27 @@ const fetchOpenAIResponse = async (url) => {
 };
 
 const fetchOpenAIRecipe = async (item) => {
-  const openai = new OpenAI({
-    apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
-    dangerouslyAllowBrowser: true,
-  });
-
-  const response = await openai.chat.completions.create({
-    model: "gpt-4",
-    messages: [
-      {
-        role: "user",
-        content:
-          "If applicable give a recipe to make the item, keep it short 50 words or less",
+  try {
+    const response = await fetch(`/api`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-      {
-        role: "user",
-        content: item,
-      },
-    ],
-  });
+      body: JSON.stringify({ item: item }),
+    });
 
-  console.log(response.choices[0].message.content);
-  return response.choices[0].message.content.trim();
+    if (!response.ok) {
+      throw new Error("Failed to fetch recipe");
+    }
+
+    const data = await response.json();
+    console.log(data.recipe);
+
+    return data.recipe;
+  } catch (error) {
+    console.error(error);
+    alert("Failed to fetch recipe");
+  }
 };
 
 const Home = () => {
